@@ -42,7 +42,7 @@ jobs:
       - name: Clone umd_map Repository
         uses: actions/checkout@v3
         with:
-          repository: /umd_map  # Replace with your GitHub username and repository name
+          repository: andrewxie04/umd_map  
           path: umd_map
           token: ${{ secrets.UMD_MAP_PAT }}
           fetch-depth: 0  # To fetch all history
