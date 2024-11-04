@@ -1,0 +1,69 @@
+name: Weekly Update of buildings_data.json to umd_map
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Runs every Monday at 00:00 UTC
+  workflow_dispatch:      # Allows manual triggering
+
+jobs:
+  update-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout UMD_api Repository
+      - name: Checkout UMD_api Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensures full history is fetched
+
+      # Step 2: Set Up Python Environment
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Specify your Python version
+
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run the Python Script to Generate buildings_data.json
+      - name: Run Fetch Availability Script
+        run: |
+          python fetch_availability.py
+
+      # Step 5: Validate buildings_data.json
+      - name: Validate buildings_data.json
+        run: |
+          python -m json.tool buildings_data.json > /dev/null
+
+      # Step 6: Clone umd_map Repository
+      - name: Clone umd_map Repository
+        uses: actions/checkout@v3
+        with:
+          repository: /umd_map  # Replace with your GitHub username and repository name
+          path: umd_map
+          token: ${{ secrets.UMD_MAP_PAT }}
+          fetch-depth: 0  # To fetch all history
+
+      # Step 7: Copy the Updated buildings_data.json to umd_map
+      - name: Copy buildings_data.json to umd_map
+        run: |
+          cp buildings_data.json umd_map/public/buildings_data.json  # Adjust the destination path if different
+
+      # Step 8: Commit and Push Changes to umd_map
+      - name: Commit and Push to umd_map
+        run: |
+          cd umd_map
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if buildings_data.json has changes
+          if git diff --quiet public/buildings_data.json; then
+            echo "No changes in buildings_data.json. Skipping commit."
+          else
+            git add public/buildings_data.json
+            git commit -m "Weekly update of buildings_data.json [skip ci]"
+            git push origin main  # Replace 'main' with your default branch if different
+          fi
