@@ -3,6 +3,7 @@ name: Weekly Update of buildings_data.json to umd_map
 on:
   schedule:
     - cron: '0 0 * * 1'  # Runs every Monday at 00:00 UTC
+    - cron: '0 0 * * 5'  # Runs every Friday at 00:00 UTC
   workflow_dispatch:      # Allows manual triggering
 
 jobs:
