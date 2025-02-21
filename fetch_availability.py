@@ -147,7 +147,9 @@ def fetch_availability_for_classroom(classroom, start_date=None, page_size=100):
     """
     if start_date is None:
         start_date = datetime.today().strftime("%Y-%m-%d")
-        
+    
+    # Convert start_date to datetime object for comparison
+    start_datetime_obj = datetime.strptime(start_date, "%Y-%m-%d")
     start_datetime = f"{start_date}T00:00:00"
     
     url = "https://25live.collegenet.com/25live/data/umd/run/availability/availabilitydata.json"
@@ -163,17 +165,34 @@ def fetch_availability_for_classroom(classroom, start_date=None, page_size=100):
     }
     
     try:
-        response = requests.get(url, params=params, timeout=10)  # Added timeout for robustness
-        response.raise_for_status()  # Raises HTTPError for bad responses
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
         data = response.json()
 
         # Use a dictionary to group events by date, time_start, and time_end
         availability_dict = {}
         for subject in data.get("subjects", []):
             date = subject.get("item_date", "")
+            # Skip if date is empty or invalid
+            if not date:
+                continue
+            
+            # Convert date string to datetime object for comparison
+            try:
+                event_date = datetime.strptime(date, "%Y-%m-%d")
+                # Skip events from before the start date
+                if event_date < start_datetime_obj:
+                    continue
+            except ValueError:
+                continue
+
             for item in subject.get("items", []):
                 time_start = item.get("start", "N/A")
                 time_end = item.get("end", "N/A")
+                # Skip invalid time entries
+                if time_start == "N/A" or time_end == "N/A":
+                    continue
+
                 key = (date, time_start, time_end)
                 if key not in availability_dict:
                     availability_dict[key] = {
@@ -181,13 +200,19 @@ def fetch_availability_for_classroom(classroom, start_date=None, page_size=100):
                         "event_name": [item.get("itemName", "N/A")],
                         "time_start": time_start,
                         "time_end": time_end,
-                        "status": item.get("type_id", "N/A"),  
+                        "status": item.get("type_id", "N/A"),
                         "additional_details": [item.get("itemId2", "N/A")]
                     }
                 else:
-                    availability_dict[key]["event_name"].append(item.get("itemName", "N/A"))
-                    availability_dict[key]["additional_details"].append(item.get("itemId2", "N/A"))
-        
+                    # Only append if it's not already in the list
+                    event_name = item.get("itemName", "N/A")
+                    if event_name not in availability_dict[key]["event_name"]:
+                        availability_dict[key]["event_name"].append(event_name)
+                    
+                    item_id = item.get("itemId2", "N/A")
+                    if item_id not in availability_dict[key]["additional_details"]:
+                        availability_dict[key]["additional_details"].append(item_id)
+
         # Convert the grouped data back into a list and combine event names
         availability = []
         for entry in availability_dict.values():
