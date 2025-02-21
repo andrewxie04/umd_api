@@ -224,8 +224,10 @@ def fetch_availability_for_all_classrooms(classrooms, start_date=None, max_worke
                 print(f"Error fetching data for classroom {classroom.id}: {e}")
 
 def main():
-    # Load buildings from JSON file
-    buildings = load_buildings("buildings.json")
+    # Load buildings from JSON file (read-only)
+    with open("buildings.json", 'r') as f:
+        buildings_data = json.load(f)
+    buildings = [Building(**b) for b in buildings_data]
     print(f"Loaded {len(buildings)} buildings from buildings.json")
     
     # Load classrooms from JSON file and associate with buildings

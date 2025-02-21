@@ -7,8 +7,8 @@
         "longitude": -76.9450130082911
     },
     {
-        "name": "Brendan Iribe Center",
-        "code": "",
+        "name": "Iribe",
+        "code": "IRB",
         "building_id": "432",
         "latitude": 38.9891607057353,
         "longitude": -76.9364438800535
@@ -2945,5 +2945,19 @@
         "building_id": "137",
         "latitude": 38.98325535,
         "longitude": -76.9361831249379
+    },
+    {
+        "name": "Atlantic Building",
+        "code": "ATL",
+        "building_id": "193",
+        "latitude": 38.99119124456978,
+        "longitude": -76.94317946797116
+    },
+    {
+        "name": "Thurgood Marshall Hall",
+        "code": "TMH",
+        "building_id": "416",
+        "latitude": 38.98514344338295,
+        "longitude": -76.93880512847053
     }
 ]
