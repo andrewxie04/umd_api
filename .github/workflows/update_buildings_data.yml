@@ -64,6 +64,6 @@ jobs:
             echo "No changes in buildings_data.json. Skipping commit."
           else
             git add public/buildings_data.json
-            git commit -m "Weekly update of buildings_data.json [skip ci]"
+            git commit -m "Weekly update of buildings_data.json"
             git push origin main  # Replace 'main' with your default branch if different
           fi
